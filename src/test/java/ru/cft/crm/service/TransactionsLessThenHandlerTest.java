@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-@DisplayName("Тесты для TransactionsLessThenHandler")
+@DisplayName("Тесты для TransactionsLessThenHandlerImpl")
 public class TransactionsLessThenHandlerTest {
     @MockBean
     private TransactionRepository transactionRepository;

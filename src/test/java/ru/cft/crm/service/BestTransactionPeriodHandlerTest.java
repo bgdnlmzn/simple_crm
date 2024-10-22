@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-@DisplayName("Тесты для BestTransactionPeriodHandler")
+@DisplayName("Тесты для BestTransactionPeriodHandlerImpl")
 @SpringBootTest
 public class BestTransactionPeriodHandlerTest {
     @MockBean
