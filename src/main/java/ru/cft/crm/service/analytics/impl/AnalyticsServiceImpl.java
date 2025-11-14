@@ -2,9 +2,9 @@ package ru.cft.crm.service.analytics.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.cft.crm.dto.analitycs.BestPeriodsResponse;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.model.analitycs.BestPeriodsResponse;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
 import ru.cft.crm.service.analytics.AnalyticsService;
 import ru.cft.crm.service.analytics.handler.BestTransactionPeriodHandler;
 import ru.cft.crm.service.analytics.handler.MostProductiveSellerHandler;
@@ -17,8 +17,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AnalyticsServiceImpl implements AnalyticsService {
+
     private final BestTransactionPeriodHandler bestTransactionPeriodHandler;
+
     private final MostProductiveSellerHandler mostProductiveSellerHandler;
+
     private final TransactionsLessThenHandler transactionsLessThenHandler;
 
     @Override

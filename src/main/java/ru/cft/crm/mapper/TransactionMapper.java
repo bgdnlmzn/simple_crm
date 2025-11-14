@@ -1,8 +1,8 @@
 package ru.cft.crm.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.cft.crm.dto.transaction.TransactionCreateRequest;
-import ru.cft.crm.dto.transaction.TransactionResponse;
+import ru.cft.crm.model.transaction.TransactionCreateRequest;
+import ru.cft.crm.model.transaction.TransactionResponse;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.type.PaymentType;

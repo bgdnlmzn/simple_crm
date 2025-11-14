@@ -1,4 +1,4 @@
-package ru.cft.crm.dto.analitycs;
+package ru.cft.crm.model.analitycs;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

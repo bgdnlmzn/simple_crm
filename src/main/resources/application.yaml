@@ -1,11 +1,31 @@
 server:
     port: 8080
+
 spring:
     datasource:
-        url: jdbc:postgresql://localhost:5430/crm
+        url: jdbc:postgresql://database:5432/crm
         username: crm
         password: crm
     flyway:
         enabled: true
         locations:
             - db.migration
+
+springdoc:
+    api-docs:
+        path: /api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        operations-sorter: method
+        tags-sorter: alpha
+        display-request-duration: true
+
+# Health check для мониторинга готовности
+management:
+    endpoint:
+        health:
+            enabled: true
+    endpoints:
+        web:
+            exposure:
+                include: health

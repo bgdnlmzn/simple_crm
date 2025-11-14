@@ -1,6 +1,6 @@
-package ru.cft.crm.dto.analitycs;
+package ru.cft.crm.model.analitycs;
 
-import ru.cft.crm.dto.utilis.BestPeriod;
+import ru.cft.crm.model.utilis.BestPeriod;
 
 public record BestPeriodsResponse(
         BestPeriod bestDayPeriod,

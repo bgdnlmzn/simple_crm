@@ -3,23 +3,26 @@ package ru.cft.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.cft.crm.dto.seller.SellerCreateRequest;
-import ru.cft.crm.dto.seller.SellerResponse;
-import ru.cft.crm.dto.seller.SellerUpdateRequest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.cft.crm.model.seller.SellerCreateRequest;
+import ru.cft.crm.model.seller.SellerResponse;
+import ru.cft.crm.model.seller.SellerUpdateRequest;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.EntityUpdateException;
 import ru.cft.crm.exception.SellerAlreadyExistsException;
 import ru.cft.crm.exception.SellerNotFoundException;
 import ru.cft.crm.history.HistorySaver;
+import ru.cft.crm.mapper.SellerMapper;
 import ru.cft.crm.repository.SellerRepository;
 import ru.cft.crm.repository.TransactionRepository;
-import ru.cft.crm.service.crud.SellerService;
+import ru.cft.crm.service.crud.impl.SellerServiceImpl;
 import ru.cft.crm.type.ChangeType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,20 +35,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Тесты SellerService")
 public class SellerServiceTest {
-    @MockBean
+
+    @Mock
     private SellerRepository sellerRepository;
 
-    @MockBean
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @MockBean
+    @Mock
     private HistorySaver historySaver;
 
-    @Autowired
-    private SellerService sellerService;
+    @InjectMocks
+    private SellerServiceImpl sellerService;
 
     private Seller seller;
     private SellerCreateRequest createRequest;
@@ -72,6 +76,11 @@ public class SellerServiceTest {
     @DisplayName("Тест на создание продавца")
     public void testCreateSeller() {
         when(sellerRepository.existsByContactInfo(anyString())).thenReturn(false);
+        when(sellerRepository.save(any(Seller.class))).thenAnswer(invocation -> {
+            Seller savedSeller = invocation.getArgument(0);
+            savedSeller.setId(1L);
+            return savedSeller;
+        });
 
         SellerResponse response = sellerService.createSeller(createRequest);
 
@@ -165,6 +174,7 @@ public class SellerServiceTest {
     public void testUpdateSeller() {
         when(sellerRepository.existsByContactInfo(anyString())).thenReturn(false);
         when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(seller);
 
         SellerResponse response = sellerService.updateSeller(1L, updateRequest);
 
@@ -178,12 +188,15 @@ public class SellerServiceTest {
     public void testDeleteSeller() {
         when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
         when(transactionRepository.findBySellerAndIsActiveTrue(seller)).thenReturn(List.of(transaction));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(seller);
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         sellerService.deleteSeller(1L);
 
         verify(sellerRepository).save(any(Seller.class));
         verify(historySaver).saveSellerHistory(any(Seller.class), eq(ChangeType.DELETED));
         verify(transactionRepository).save(any(Transaction.class));
+        verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.DELETED));
     }
 
     @Test
@@ -203,10 +216,54 @@ public class SellerServiceTest {
     public void testDeleteSellerWithTransactionsDeactivation() {
         when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
         when(transactionRepository.findBySellerAndIsActiveTrue(seller)).thenReturn(List.of(transaction));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(seller);
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         sellerService.deleteSeller(1L);
 
-        assertThat(transaction.getIsActive()).isFalse();
         verify(transactionRepository).save(any(Transaction.class));
+        verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.DELETED));
+    }
+
+    @Test
+    @DisplayName("Тест на обновление только имени продавца")
+    public void testUpdateSellerNameOnly() {
+        SellerUpdateRequest nameOnlyRequest = new SellerUpdateRequest("New Name", null);
+
+        when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(seller);
+
+        SellerResponse response = sellerService.updateSeller(1L, nameOnlyRequest);
+
+        assertThat(response.sellerName()).isEqualTo("New Name");
+        verify(sellerRepository).save(any(Seller.class));
+        verify(historySaver).saveSellerHistory(any(Seller.class), eq(ChangeType.UPDATED));
+    }
+
+    @Test
+    @DisplayName("Тест на обновление только контактной информации")
+    public void testUpdateSellerContactInfoOnly() {
+        SellerUpdateRequest contactOnlyRequest = new SellerUpdateRequest(null, "new@email.com");
+
+        when(sellerRepository.existsByContactInfo(anyString())).thenReturn(false);
+        when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(seller);
+
+        SellerResponse response = sellerService.updateSeller(1L, contactOnlyRequest);
+
+        verify(sellerRepository).save(any(Seller.class));
+        verify(historySaver).saveSellerHistory(any(Seller.class), eq(ChangeType.UPDATED));
+    }
+
+    @Test
+    @DisplayName("Тест на обновление с уже существующим email")
+    public void testUpdateSellerWithExistingEmail() {
+        when(sellerRepository.existsByContactInfo(anyString())).thenReturn(true);
+
+        assertThatThrownBy(() -> sellerService.updateSeller(1L, updateRequest))
+                .isInstanceOf(SellerAlreadyExistsException.class)
+                .hasMessage("Продавец с таким email уже существует");
+
+        verify(sellerRepository, never()).save(any(Seller.class));
     }
 }

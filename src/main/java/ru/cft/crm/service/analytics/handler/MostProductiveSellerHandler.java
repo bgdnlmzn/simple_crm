@@ -1,6 +1,6 @@
 package ru.cft.crm.service.analytics.handler;
 
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
 
 import java.time.LocalDate;
 import java.util.List;

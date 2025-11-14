@@ -2,10 +2,10 @@ package ru.cft.crm.mapper;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
-import ru.cft.crm.dto.seller.SellerCreateRequest;
-import ru.cft.crm.dto.seller.SellerResponse;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.model.seller.SellerCreateRequest;
+import ru.cft.crm.model.seller.SellerResponse;
 import ru.cft.crm.entity.Seller;
 
 import java.math.BigDecimal;

@@ -1,7 +1,24 @@
-FROM openjdk:17-jdk-slim
-COPY ./build/libs/crm-0.0.1.jar /opt/service.jar
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/crm
-ENV POSTGRES_USER=crm
-ENV POSTGRES_PASSWORD=crm
+# ----------- BUILD STAGE -----------
+FROM gradle:8.5-jdk17 AS build
+
+WORKDIR /app
+
+COPY build.gradle settings.gradle ./
+COPY gradle gradle
+
+RUN gradle dependencies --no-daemon || true
+
+COPY src ./src
+
+RUN gradle bootJar --no-daemon
+
+# ----------- RUNTIME STAGE -----------
+FROM eclipse-temurin:17-jre-jammy AS runtime
+
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-CMD java -jar /opt/service.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

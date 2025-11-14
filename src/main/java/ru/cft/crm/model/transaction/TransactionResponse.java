@@ -1,4 +1,4 @@
-package ru.cft.crm.dto.transaction;
+package ru.cft.crm.model.transaction;
 
 import ru.cft.crm.type.PaymentType;
 

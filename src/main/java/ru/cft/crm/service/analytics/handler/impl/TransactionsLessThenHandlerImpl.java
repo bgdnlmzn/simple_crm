@@ -2,7 +2,8 @@ package ru.cft.crm.service.analytics.handler.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
+import org.springframework.transaction.annotation.Transactional;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.InvalidStartDateException;
@@ -18,13 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ru.cft.crm.model.utilis.Constants.ONE_DAY;
+
 @Service
 @RequiredArgsConstructor
 public class TransactionsLessThenHandlerImpl implements TransactionsLessThenHandler {
+
     private final TransactionRepository transactionRepository;
-    private final static int ONE_DAY = 1;
 
     @Override
+    @Transactional(readOnly = true)
     public List<SellerWithTransactionsResponse> getSellersWithTransactionsLessThan(
             BigDecimal maxAmount,
             LocalDate start,

@@ -2,9 +2,10 @@ package ru.cft.crm.service.crud.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.cft.crm.dto.transaction.TransactionCreateRequest;
-import ru.cft.crm.dto.transaction.TransactionResponse;
-import ru.cft.crm.dto.transaction.TransactionUpdateRequest;
+import org.springframework.transaction.annotation.Transactional;
+import ru.cft.crm.model.transaction.TransactionCreateRequest;
+import ru.cft.crm.model.transaction.TransactionResponse;
+import ru.cft.crm.model.transaction.TransactionUpdateRequest;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.EntityUpdateException;
@@ -26,11 +27,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
+
     private final TransactionRepository transactionRepository;
+
     private final SellerRepository sellerRepository;
+
     private final HistorySaver historySaver;
 
     @Override
+    @Transactional
     public TransactionResponse createTransaction(TransactionCreateRequest body) {
         Seller seller = findSellerById(body.sellerId());
         PaymentType paymentType = validatePaymentType(body.paymentType());
@@ -47,12 +52,14 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TransactionResponse getTransaction(Long transactionId) {
         return TransactionMapper.
                 mapTransactionToResponse(findTransactionById(transactionId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TransactionResponse> getAllSellersTransactions(Long sellerId) {
         Seller seller = findSellerById(sellerId);
 
@@ -64,6 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TransactionResponse> getAllActiveTransactions() {
         List<Transaction> transactions = transactionRepository
                 .findByIsActiveTrue();
@@ -73,6 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TransactionResponse> getAllTransactions() {
         List<Transaction> transactions = transactionRepository.findAll();
 
@@ -81,6 +90,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public void deleteTransaction(Long transactionId) {
         Transaction transaction = findTransactionById(transactionId);
         historySaver.saveTransactionHistory(transaction, ChangeType.DELETED);
@@ -92,9 +102,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public TransactionResponse updateTransaction(
             Long transactionId,
-            TransactionUpdateRequest body) {
+            TransactionUpdateRequest body
+    ) {
         if (body.amount() == null && body.paymentType() == null) {
             throw new EntityUpdateException(
                     "Поля для изменения не должны быть пустыми");
@@ -110,7 +122,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     private void updateTransactionFields(
             Transaction transaction,
-            TransactionUpdateRequest body) {
+            TransactionUpdateRequest body
+    ) {
         if (body.amount() != null) {
             transaction.setAmount(body.amount());
         }

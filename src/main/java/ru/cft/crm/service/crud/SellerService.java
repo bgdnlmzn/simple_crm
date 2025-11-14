@@ -1,8 +1,8 @@
 package ru.cft.crm.service.crud;
 
-import ru.cft.crm.dto.seller.SellerCreateRequest;
-import ru.cft.crm.dto.seller.SellerResponse;
-import ru.cft.crm.dto.seller.SellerUpdateRequest;
+import ru.cft.crm.model.seller.SellerCreateRequest;
+import ru.cft.crm.model.seller.SellerResponse;
+import ru.cft.crm.model.seller.SellerUpdateRequest;
 
 import java.util.List;
 

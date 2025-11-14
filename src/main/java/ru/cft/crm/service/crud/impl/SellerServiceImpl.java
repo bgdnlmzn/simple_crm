@@ -2,9 +2,10 @@ package ru.cft.crm.service.crud.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.cft.crm.dto.seller.SellerCreateRequest;
-import ru.cft.crm.dto.seller.SellerResponse;
-import ru.cft.crm.dto.seller.SellerUpdateRequest;
+import org.springframework.transaction.annotation.Transactional;
+import ru.cft.crm.model.seller.SellerCreateRequest;
+import ru.cft.crm.model.seller.SellerResponse;
+import ru.cft.crm.model.seller.SellerUpdateRequest;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.EntityUpdateException;
@@ -24,10 +25,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SellerServiceImpl implements SellerService {
     private final SellerRepository sellerRepository;
+
     private final TransactionRepository transactionRepository;
+
     private final HistorySaver historySaver;
 
     @Override
+    @Transactional
     public SellerResponse createSeller(SellerCreateRequest body) {
         checkAlreadyCreated(body.contactInfo());
 
@@ -38,11 +42,13 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SellerResponse getSeller(Long sellerId) {
         return SellerMapper.mapSellerToDto(findSellerById(sellerId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SellerResponse> getAllActiveSellers() {
         List<Seller> sellers = sellerRepository.findByIsActiveTrue();
 
@@ -52,6 +58,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SellerResponse> getAllSellers() {
         List<Seller> sellers = sellerRepository.findAll();
 
@@ -61,6 +68,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    @Transactional
     public SellerResponse updateSeller(Long sellerId, SellerUpdateRequest body) {
         if (body.sellerName() == null && body.contactInfo() == null) {
             throw new EntityUpdateException(
@@ -79,6 +87,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
+    @Transactional
     public void deleteSeller(Long sellerId) {
         Seller seller = findSellerById(sellerId);
         historySaver.saveSellerHistory(seller, ChangeType.DELETED);

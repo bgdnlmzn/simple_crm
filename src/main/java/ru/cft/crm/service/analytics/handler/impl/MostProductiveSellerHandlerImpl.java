@@ -2,8 +2,9 @@ package ru.cft.crm.service.analytics.handler.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
-import ru.cft.crm.dto.utilis.DateRange;
+import org.springframework.transaction.annotation.Transactional;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.utilis.DateRange;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.InvalidTimePeriodException;
@@ -22,20 +23,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ru.cft.crm.model.utilis.Constants.LAST_DAY_OFFSET;
+import static ru.cft.crm.model.utilis.Constants.MONTHS_IN_QUARTER;
+import static ru.cft.crm.model.utilis.Constants.ONE_DAY;
+import static ru.cft.crm.model.utilis.Constants.ONE_YEAR;
+
 @Component
 @RequiredArgsConstructor
 public class MostProductiveSellerHandlerImpl implements MostProductiveSellerHandler {
+
     private final TransactionRepository transactionRepository;
-    private static final int ONE_DAY = 1;
-    private static final int MONTHS_IN_QUARTER = 3;
-    private static final int LAST_DAY_OFFSET = 1;
-    private static final int ONE_YEAR = 1;
 
     @Override
+    @Transactional(readOnly = true)
     public List<MostProductiveSellerResponse> getMostProductiveSellers(
             LocalDate date,
             String period,
-            boolean active) {
+            boolean active
+    ) {
         TimePeriod periodEnum = TimePeriod.getTimePeriod(period);
         DateRange dateRange = getDateRangeForPeriod(date, periodEnum);
         return getMostProductiveSellers(dateRange.start(), dateRange.end(), active);

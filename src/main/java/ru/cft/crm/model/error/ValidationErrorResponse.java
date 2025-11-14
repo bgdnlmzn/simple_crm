@@ -1,4 +1,4 @@
-package ru.cft.crm.dto.error;
+package ru.cft.crm.model.error;
 
 import java.time.LocalDateTime;
 import java.util.List;

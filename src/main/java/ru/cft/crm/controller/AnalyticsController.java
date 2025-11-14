@@ -1,14 +1,12 @@
 package ru.cft.crm.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.cft.crm.dto.analitycs.BestPeriodsResponse;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.controller.api.AnalyticsApi;
+import ru.cft.crm.model.analitycs.BestPeriodsResponse;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
 import ru.cft.crm.service.analytics.AnalyticsService;
 
 import java.math.BigDecimal;
@@ -18,26 +16,30 @@ import java.util.List;
 @RestController
 @RequestMapping("api/analytics")
 @RequiredArgsConstructor
-public class AnalyticsController {
+public class AnalyticsController implements AnalyticsApi {
+
     private final AnalyticsService analyticsService;
 
-    @GetMapping("/most-productive")
+    @Override
     public List<MostProductiveSellerResponse> getMostProductiveSeller(
-            @RequestParam LocalDate date,
-            @RequestParam String period,
-            @RequestParam Boolean active) {
+            LocalDate date,
+            String period,
+            Boolean active
+    ) {
         return analyticsService.getMostProductiveSellers(
                 date,
                 period,
-                active);
+                active
+        );
     }
 
-    @GetMapping("/less-then")
+    @Override
     public List<SellerWithTransactionsResponse> getSellersWithTransactionsLessThan(
-            @RequestParam BigDecimal amount,
-            @RequestParam LocalDate start,
-            @RequestParam LocalDate end,
-            @RequestParam Boolean active) {
+            BigDecimal amount,
+            LocalDate start,
+            LocalDate end,
+            Boolean active
+    ) {
         return analyticsService.getSellersWithTransactionsLessThan(
                 amount,
                 start,
@@ -45,9 +47,8 @@ public class AnalyticsController {
                 active);
     }
 
-    @GetMapping("/best-periods/seller/{id}")
-    public BestPeriodsResponse getBestTransactionPeriod(
-            @PathVariable Long id) {
+    @Override
+    public BestPeriodsResponse getBestTransactionPeriod(Long id) {
         return analyticsService.getBestTransactionPeriod(id);
     }
 }

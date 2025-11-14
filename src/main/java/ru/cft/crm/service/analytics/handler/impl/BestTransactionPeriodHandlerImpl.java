@@ -2,9 +2,10 @@ package ru.cft.crm.service.analytics.handler.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.cft.crm.dto.analitycs.BestPeriodsResponse;
-import ru.cft.crm.dto.utilis.BestPeriod;
-import ru.cft.crm.dto.utilis.PeriodDefinition;
+import org.springframework.transaction.annotation.Transactional;
+import ru.cft.crm.model.analitycs.BestPeriodsResponse;
+import ru.cft.crm.model.utilis.BestPeriod;
+import ru.cft.crm.model.utilis.PeriodDefinition;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.InvalidTimePeriodException;
 import ru.cft.crm.exception.TransactionNotFoundException;
@@ -22,9 +23,11 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class BestTransactionPeriodHandlerImpl implements BestTransactionPeriodHandler {
+
     private final TransactionRepository transactionRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public BestPeriodsResponse getBestTransactionPeriod(Long sellerId) {
         List<Transaction> transactions = transactionRepository.findAllBySellerId(sellerId);
 

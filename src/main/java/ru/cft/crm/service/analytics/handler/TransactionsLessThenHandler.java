@@ -1,6 +1,6 @@
 package ru.cft.crm.service.analytics.handler;
 
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

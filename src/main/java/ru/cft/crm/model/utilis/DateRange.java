@@ -1,4 +1,4 @@
-package ru.cft.crm.dto.utilis;
+package ru.cft.crm.model.utilis;
 
 import java.time.LocalDateTime;
 

@@ -3,15 +3,16 @@ package ru.cft.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.cft.crm.dto.analitycs.BestPeriodsResponse;
-import ru.cft.crm.dto.utilis.BestPeriod;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.cft.crm.model.analitycs.BestPeriodsResponse;
+import ru.cft.crm.model.utilis.BestPeriod;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.TransactionNotFoundException;
 import ru.cft.crm.repository.TransactionRepository;
-import ru.cft.crm.service.analytics.handler.BestTransactionPeriodHandler;
+import ru.cft.crm.service.analytics.handler.impl.BestTransactionPeriodHandlerImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,13 +23,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты для BestTransactionPeriodHandlerImpl")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class BestTransactionPeriodHandlerTest {
-    @MockBean
+
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @Autowired
-    private BestTransactionPeriodHandler bestTransactionPeriodHandler;
+    @InjectMocks
+    private BestTransactionPeriodHandlerImpl bestTransactionPeriodHandler;
 
     private List<Transaction> transactions;
 
@@ -94,15 +96,6 @@ public class BestTransactionPeriodHandlerTest {
                         BigDecimal.valueOf(1500),
                         LocalDateTime.of(2024, 3, 30, 18, 0))
         );
-    }
-
-    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime transactionDate) {
-        Transaction transaction = new Transaction();
-        transaction.setId(id);
-        transaction.setAmount(amount);
-        transaction.setTransactionDate(transactionDate);
-        transaction.setIsActive(true);
-        return transaction;
     }
 
     @Test
@@ -172,5 +165,14 @@ public class BestTransactionPeriodHandlerTest {
         assertThatThrownBy(() -> bestTransactionPeriodHandler.getBestTransactionPeriod(sellerId))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessage("У продавца нет транзакций");
+    }
+
+    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime transactionDate) {
+        Transaction transaction = new Transaction();
+        transaction.setId(id);
+        transaction.setAmount(amount);
+        transaction.setTransactionDate(transactionDate);
+        transaction.setIsActive(true);
+        return transaction;
     }
 }

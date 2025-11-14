@@ -1,8 +1,8 @@
 package ru.cft.crm.service.crud;
 
-import ru.cft.crm.dto.transaction.TransactionCreateRequest;
-import ru.cft.crm.dto.transaction.TransactionResponse;
-import ru.cft.crm.dto.transaction.TransactionUpdateRequest;
+import ru.cft.crm.model.transaction.TransactionCreateRequest;
+import ru.cft.crm.model.transaction.TransactionResponse;
+import ru.cft.crm.model.transaction.TransactionUpdateRequest;
 
 import java.util.List;
 

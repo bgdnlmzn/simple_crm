@@ -1,4 +1,4 @@
-package ru.cft.crm.dto.error;
+package ru.cft.crm.model.error;
 
 public record FieldError(
         String field,

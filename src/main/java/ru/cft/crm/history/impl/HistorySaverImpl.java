@@ -16,7 +16,9 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 public class HistorySaverImpl implements HistorySaver {
+
     private final SellersHistoryRepository sellersHistoryRepository;
+
     private final TransactionsHistoryRepository transactionsHistoryRepository;
 
     @Override

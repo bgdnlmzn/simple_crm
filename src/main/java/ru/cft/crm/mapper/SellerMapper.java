@@ -1,10 +1,10 @@
 package ru.cft.crm.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
-import ru.cft.crm.dto.seller.SellerCreateRequest;
-import ru.cft.crm.dto.seller.SellerResponse;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.model.seller.SellerCreateRequest;
+import ru.cft.crm.model.seller.SellerResponse;
 import ru.cft.crm.entity.Seller;
 
 import java.math.BigDecimal;

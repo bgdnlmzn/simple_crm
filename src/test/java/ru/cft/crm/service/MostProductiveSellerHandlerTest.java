@@ -3,16 +3,17 @@ package ru.cft.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.cft.crm.dto.analitycs.MostProductiveSellerResponse;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.cft.crm.model.analitycs.MostProductiveSellerResponse;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.InvalidTimePeriodException;
 import ru.cft.crm.exception.SellerNotFoundException;
 import ru.cft.crm.repository.TransactionRepository;
-import ru.cft.crm.service.analytics.handler.MostProductiveSellerHandler;
+import ru.cft.crm.service.analytics.handler.impl.MostProductiveSellerHandlerImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,13 +27,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты для MostProductiveSellerHandlerImpl")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class MostProductiveSellerHandlerTest {
-    @MockBean
+
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @Autowired
-    private MostProductiveSellerHandler mostProductiveSellerHandler;
+    @InjectMocks
+    private MostProductiveSellerHandlerImpl mostProductiveSellerHandler;
 
     private List<Transaction> transactionsForDay;
     private List<Transaction> transactionsForMonth;
@@ -45,132 +47,6 @@ public class MostProductiveSellerHandlerTest {
         transactionsForMonth = createTransactionDataForMonth();
         transactionsForQuarter = createTransactionDataForQuarter();
         transactionsForYear = createTransactionDataForYear();
-    }
-
-    private List<Transaction> createTransactionDataForYear() {
-        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
-        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
-
-        return List.of(
-                createTransaction(1L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(2L,
-                        BigDecimal.valueOf(101),
-                        LocalDateTime.of(2024, 11, 1, 10, 0),
-                        seller1),
-                createTransaction(3L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 5, 1, 10, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 12, 1, 10, 0),
-                        seller2)
-        );
-    }
-
-    private List<Transaction> createTransactionDataForQuarter() {
-        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
-        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
-
-        return List.of(
-                createTransaction(1L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(2L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 3, 1, 10, 0),
-                        seller1),
-                createTransaction(3L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 3, 1, 10, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 2, 1, 10, 0),
-                        seller2)
-        );
-    }
-
-    private List<Transaction> createTransactionDataForMonth() {
-        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
-        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
-        Seller seller3 = createSeller(3L, "Seller 3", "seller3@mail.ru");
-
-        return List.of(
-                createTransaction(1L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(2L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 3, 10, 0),
-                        seller1),
-                createTransaction(3L,
-                        BigDecimal.valueOf(1000),
-                        LocalDateTime.of(2024, 1, 12, 10, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(1000),
-                        LocalDateTime.of(2024, 1, 26, 10, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(1100),
-                        LocalDateTime.of(2024, 1, 24, 10, 0),
-                        seller3),
-                createTransaction(4L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 30, 10, 0),
-                        seller3)
-
-        );
-    }
-
-    private List<Transaction> createTransactionDataForDay() {
-        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
-        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
-
-        return List.of(
-                createTransaction(1L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(2L,
-                        BigDecimal.valueOf(100),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(3L,
-                        BigDecimal.valueOf(1000),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(1000),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller2)
-        );
-    }
-
-    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime date, Seller seller) {
-        Transaction transaction = new Transaction();
-        transaction.setId(id);
-        transaction.setAmount(amount);
-        transaction.setTransactionDate(date);
-        transaction.setSeller(seller);
-        transaction.setIsActive(true);
-        return transaction;
-    }
-
-    private Seller createSeller(Long id, String sellerName, String contactInfo) {
-        Seller seller = new Seller();
-        seller.setId(id);
-        seller.setSellerName(sellerName);
-        seller.setContactInfo(contactInfo);
-        seller.setRegistrationDate(LocalDateTime.now());
-        seller.setIsActive(true);
-        return seller;
     }
 
     @Test
@@ -256,11 +132,134 @@ public class MostProductiveSellerHandlerTest {
     public void testGetMostProductiveSellerForYearNoTransactions() {
         LocalDate date = LocalDate.of(2024, 1, 1);
 
-        when(transactionRepository.findAllByTransactionDateBetweenAndSellerIsActiveTrue(any(), any()))
-                .thenReturn(Collections.emptyList());
-
         assertThatThrownBy(() -> mostProductiveSellerHandler
                 .getMostProductiveSellers(date, "TWODAYS", true))
                 .isInstanceOf(InvalidTimePeriodException.class);
+    }
+
+    private List<Transaction> createTransactionDataForYear() {
+        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
+        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
+
+        return List.of(
+                createTransaction(1L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(2L,
+                        BigDecimal.valueOf(101),
+                        LocalDateTime.of(2024, 11, 1, 10, 0),
+                        seller1),
+                createTransaction(3L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 5, 1, 10, 0),
+                        seller2),
+                createTransaction(4L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 12, 1, 10, 0),
+                        seller2)
+        );
+    }
+
+    private List<Transaction> createTransactionDataForQuarter() {
+        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
+        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
+
+        return List.of(
+                createTransaction(1L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(2L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 3, 1, 10, 0),
+                        seller1),
+                createTransaction(3L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 3, 1, 10, 0),
+                        seller2),
+                createTransaction(4L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 2, 1, 10, 0),
+                        seller2)
+        );
+    }
+
+    private List<Transaction> createTransactionDataForMonth() {
+        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
+        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
+        Seller seller3 = createSeller(3L, "Seller 3", "seller3@mail.ru");
+
+        return List.of(
+                createTransaction(1L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(2L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 3, 10, 0),
+                        seller1),
+                createTransaction(3L,
+                        BigDecimal.valueOf(1000),
+                        LocalDateTime.of(2024, 1, 12, 10, 0),
+                        seller2),
+                createTransaction(4L,
+                        BigDecimal.valueOf(1000),
+                        LocalDateTime.of(2024, 1, 26, 10, 0),
+                        seller2),
+                createTransaction(5L,
+                        BigDecimal.valueOf(1100),
+                        LocalDateTime.of(2024, 1, 24, 10, 0),
+                        seller3),
+                createTransaction(6L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 30, 10, 0),
+                        seller3)
+
+        );
+    }
+
+    private List<Transaction> createTransactionDataForDay() {
+        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
+        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
+
+        return List.of(
+                createTransaction(1L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(2L,
+                        BigDecimal.valueOf(100),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(3L,
+                        BigDecimal.valueOf(1000),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller2),
+                createTransaction(4L,
+                        BigDecimal.valueOf(1000),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller2)
+        );
+    }
+
+    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime date, Seller seller) {
+        Transaction transaction = new Transaction();
+        transaction.setId(id);
+        transaction.setAmount(amount);
+        transaction.setTransactionDate(date);
+        transaction.setSeller(seller);
+        transaction.setIsActive(true);
+        return transaction;
+    }
+
+    private Seller createSeller(Long id, String sellerName, String contactInfo) {
+        Seller seller = new Seller();
+        seller.setId(id);
+        seller.setSellerName(sellerName);
+        seller.setContactInfo(contactInfo);
+        seller.setRegistrationDate(LocalDateTime.now());
+        seller.setIsActive(true);
+        return seller;
     }
 }

@@ -3,14 +3,16 @@ package ru.cft.crm.history;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.SellersHistory;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.entity.TransactionsHistory;
+import ru.cft.crm.history.impl.HistorySaverImpl;
 import ru.cft.crm.repository.SellersHistoryRepository;
 import ru.cft.crm.repository.TransactionsHistoryRepository;
 import ru.cft.crm.type.ChangeType;
@@ -21,17 +23,19 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class HistorySaverTest {
-    @MockBean
+
+    @Mock
     private SellersHistoryRepository sellersHistoryRepository;
 
-    @MockBean
+    @Mock
     private TransactionsHistoryRepository transactionsHistoryRepository;
 
-    @Autowired
-    private HistorySaver historySaver;
+    @InjectMocks
+    private HistorySaverImpl historySaver;
 
     private Seller seller;
     private Transaction transaction;
@@ -42,12 +46,7 @@ public class HistorySaverTest {
         seller.setId(1L);
         seller.setSellerName("Test Seller");
         seller.setContactInfo("testSeller@mail.ru");
-        seller.setRegistrationDate(LocalDateTime.of(2024,
-                1,
-                1,
-                0,
-                0)
-        );
+        seller.setRegistrationDate(LocalDateTime.of(2024, 1, 1, 0, 0));
         seller.setUpdatedAt(LocalDateTime.now());
 
         transaction = new Transaction();
@@ -55,12 +54,7 @@ public class HistorySaverTest {
         transaction.setSeller(seller);
         transaction.setAmount(BigDecimal.valueOf(100));
         transaction.setPaymentType(PaymentType.CARD);
-        transaction.setTransactionDate(LocalDateTime.of(2024,
-                1,
-                1,
-                0,
-                0)
-        );
+        transaction.setTransactionDate(LocalDateTime.of(2024, 1, 1, 0, 0));
         transaction.setUpdatedAt(LocalDateTime.now());
     }
 
@@ -68,6 +62,9 @@ public class HistorySaverTest {
     @DisplayName("Тест на сохранение истории продавца")
     public void testSaveSellerHistory() {
         ChangeType changeType = ChangeType.UPDATED;
+
+        when(sellersHistoryRepository.save(org.mockito.ArgumentMatchers.any(SellersHistory.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         historySaver.saveSellerHistory(seller, changeType);
 
@@ -90,6 +87,10 @@ public class HistorySaverTest {
     public void testSaveTransactionHistory() {
         ChangeType changeType = ChangeType.DELETED;
 
+        // Настройка поведения мока - возвращаем тот же объект, который сохраняем
+        when(transactionsHistoryRepository.save(org.mockito.ArgumentMatchers.any(TransactionsHistory.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         historySaver.saveTransactionHistory(transaction, changeType);
 
         ArgumentCaptor<TransactionsHistory> captor = ArgumentCaptor.forClass(TransactionsHistory.class);
@@ -105,5 +106,23 @@ public class HistorySaverTest {
         assertThat(savedHistory.getUpdatedAt()).isEqualTo(transaction.getUpdatedAt());
         assertThat(savedHistory.getChangeType()).isEqualTo(changeType);
         assertThat(savedHistory.getChangeTimestamp()).isNotNull();
+    }
+
+
+    @Test
+    @DisplayName("Тест на сохранение истории транзакции с UPDATED типом изменения")
+    public void testSaveTransactionHistoryWithUpdatedType() {
+        ChangeType changeType = ChangeType.UPDATED;
+
+        when(transactionsHistoryRepository.save(org.mockito.ArgumentMatchers.any(TransactionsHistory.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        historySaver.saveTransactionHistory(transaction, changeType);
+
+        ArgumentCaptor<TransactionsHistory> captor = ArgumentCaptor.forClass(TransactionsHistory.class);
+        verify(transactionsHistoryRepository).save(captor.capture());
+
+        TransactionsHistory savedHistory = captor.getValue();
+        assertThat(savedHistory.getChangeType()).isEqualTo(ChangeType.UPDATED);
     }
 }

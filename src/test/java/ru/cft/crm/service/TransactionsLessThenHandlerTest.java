@@ -3,16 +3,21 @@ package ru.cft.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.cft.crm.dto.analitycs.SellerWithTransactionsResponse;
+import ru.cft.crm.model.analitycs.SellerWithTransactionsResponse;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.InvalidStartDateException;
 import ru.cft.crm.exception.SellerNotFoundException;
 import ru.cft.crm.repository.TransactionRepository;
 import ru.cft.crm.service.analytics.handler.TransactionsLessThenHandler;
+import ru.cft.crm.service.analytics.handler.impl.TransactionsLessThenHandlerImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,64 +30,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
 @DisplayName("Тесты для TransactionsLessThenHandlerImpl")
+@ExtendWith(MockitoExtension.class)
 public class TransactionsLessThenHandlerTest {
-    @MockBean
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @Autowired
-    private TransactionsLessThenHandler transactionsLessThenHandler;
+    @InjectMocks
+    private TransactionsLessThenHandlerImpl transactionsLessThenHandler;
 
     private List<Transaction> transactions;
 
     @BeforeEach
     public void setUp() {
         transactions = createTransactionData();
-    }
-
-    private List<Transaction> createTransactionData() {
-        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
-        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
-
-        return List.of(
-                createTransaction(1L,
-                        BigDecimal.valueOf(50),
-                        LocalDateTime.of(2024, 1, 1, 10, 0),
-                        seller1),
-                createTransaction(2L,
-                        BigDecimal.valueOf(150),
-                        LocalDateTime.of(2024, 1, 2, 11, 0),
-                        seller1),
-                createTransaction(3L,
-                        BigDecimal.valueOf(80),
-                        LocalDateTime.of(2024, 1, 3, 12, 0),
-                        seller2),
-                createTransaction(4L,
-                        BigDecimal.valueOf(200),
-                        LocalDateTime.of(2024, 1, 4, 13, 0),
-                        seller2)
-        );
-    }
-
-    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime date, Seller seller) {
-        Transaction transaction = new Transaction();
-        transaction.setId(id);
-        transaction.setAmount(amount);
-        transaction.setTransactionDate(date);
-        transaction.setSeller(seller);
-        transaction.setIsActive(true);
-        return transaction;
-    }
-
-    private Seller createSeller(Long id, String sellerName, String contactInfo) {
-        Seller seller = new Seller();
-        seller.setId(id);
-        seller.setSellerName(sellerName);
-        seller.setContactInfo(contactInfo);
-        seller.setRegistrationDate(LocalDateTime.now());
-        seller.setIsActive(true);
-        return seller;
     }
 
     @Test
@@ -149,5 +110,49 @@ public class TransactionsLessThenHandlerTest {
                                 BigDecimal.valueOf(100), start, end, true))
                 .isInstanceOf(SellerNotFoundException.class)
                 .hasMessage("Ни одного продавца не найдено");
+    }
+
+    private List<Transaction> createTransactionData() {
+        Seller seller1 = createSeller(1L, "Seller 1", "seller1@mail.ru");
+        Seller seller2 = createSeller(2L, "Seller 2", "seller2@mail.ru");
+
+        return List.of(
+                createTransaction(1L,
+                        BigDecimal.valueOf(50),
+                        LocalDateTime.of(2024, 1, 1, 10, 0),
+                        seller1),
+                createTransaction(2L,
+                        BigDecimal.valueOf(150),
+                        LocalDateTime.of(2024, 1, 2, 11, 0),
+                        seller1),
+                createTransaction(3L,
+                        BigDecimal.valueOf(80),
+                        LocalDateTime.of(2024, 1, 3, 12, 0),
+                        seller2),
+                createTransaction(4L,
+                        BigDecimal.valueOf(200),
+                        LocalDateTime.of(2024, 1, 4, 13, 0),
+                        seller2)
+        );
+    }
+
+    private Transaction createTransaction(Long id, BigDecimal amount, LocalDateTime date, Seller seller) {
+        Transaction transaction = new Transaction();
+        transaction.setId(id);
+        transaction.setAmount(amount);
+        transaction.setTransactionDate(date);
+        transaction.setSeller(seller);
+        transaction.setIsActive(true);
+        return transaction;
+    }
+
+    private Seller createSeller(Long id, String sellerName, String contactInfo) {
+        Seller seller = new Seller();
+        seller.setId(id);
+        seller.setSellerName(sellerName);
+        seller.setContactInfo(contactInfo);
+        seller.setRegistrationDate(LocalDateTime.now());
+        seller.setIsActive(true);
+        return seller;
     }
 }

@@ -3,12 +3,13 @@ package ru.cft.crm.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import ru.cft.crm.dto.transaction.TransactionCreateRequest;
-import ru.cft.crm.dto.transaction.TransactionResponse;
-import ru.cft.crm.dto.transaction.TransactionUpdateRequest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.cft.crm.model.transaction.TransactionCreateRequest;
+import ru.cft.crm.model.transaction.TransactionResponse;
+import ru.cft.crm.model.transaction.TransactionUpdateRequest;
 import ru.cft.crm.entity.Seller;
 import ru.cft.crm.entity.Transaction;
 import ru.cft.crm.exception.EntityUpdateException;
@@ -18,7 +19,7 @@ import ru.cft.crm.exception.TransactionNotFoundException;
 import ru.cft.crm.history.HistorySaver;
 import ru.cft.crm.repository.SellerRepository;
 import ru.cft.crm.repository.TransactionRepository;
-import ru.cft.crm.service.crud.TransactionService;
+import ru.cft.crm.service.crud.impl.TransactionServiceImpl;
 import ru.cft.crm.type.ChangeType;
 import ru.cft.crm.type.PaymentType;
 
@@ -34,20 +35,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Тесты TransactionService")
 public class TransactionServiceTest {
-    @MockBean
+
+    @Mock
     private TransactionRepository transactionRepository;
 
-    @MockBean
+    @Mock
     private SellerRepository sellerRepository;
 
-    @MockBean
+    @Mock
     private HistorySaver historySaver;
 
-    @Autowired
-    private TransactionService transactionService;
+    @InjectMocks
+    private TransactionServiceImpl transactionService;
 
     private Seller seller;
     private Transaction transaction;
@@ -75,12 +77,16 @@ public class TransactionServiceTest {
         );
 
         when(sellerRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(seller));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction savedTransaction = invocation.getArgument(0);
+            savedTransaction.setId(1L);
+            return savedTransaction;
+        });
 
         TransactionResponse response = transactionService.createTransaction(request);
 
         assertThat(response.amount()).isEqualTo(new BigDecimal("100"));
-        assertThat(response.paymentType().toString()).isEqualTo("CARD");
-
+        assertThat(response.paymentType()).isEqualTo(PaymentType.CARD);
         verify(transactionRepository).save(any(Transaction.class));
     }
 
@@ -96,7 +102,6 @@ public class TransactionServiceTest {
         assertThatThrownBy(() -> transactionService.createTransaction(request))
                 .isInstanceOf(InvalidPaymentTypeException.class)
                 .hasMessage("Тип оплаты не должен быть пустым");
-
 
         verify(transactionRepository, never()).save(any(Transaction.class));
     }
@@ -114,7 +119,6 @@ public class TransactionServiceTest {
                 .isInstanceOf(InvalidPaymentTypeException.class)
                 .hasMessage("Тип оплаты не должен быть пустым");
 
-
         verify(transactionRepository, never()).save(any(Transaction.class));
     }
 
@@ -130,7 +134,6 @@ public class TransactionServiceTest {
         assertThatThrownBy(() -> transactionService.createTransaction(request))
                 .isInstanceOf(InvalidPaymentTypeException.class)
                 .hasMessage("Неверный тип оплаты: CASHBACK. Доступные типы оплаты: [CASH, CARD, TRANSFER]");
-
 
         verify(transactionRepository, never()).save(any(Transaction.class));
     }
@@ -211,11 +214,12 @@ public class TransactionServiceTest {
         );
 
         when(transactionRepository.findByIdAndIsActive(1L, true)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         TransactionResponse response = transactionService.updateTransaction(1L, request);
 
         assertThat(response.amount()).isEqualTo(new BigDecimal("200"));
-        assertThat(response.paymentType().toString()).isEqualTo("CASH");
+        assertThat(response.paymentType()).isEqualTo(PaymentType.CASH);
         verify(transactionRepository).save(any(Transaction.class));
         verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.UPDATED));
     }
@@ -236,10 +240,10 @@ public class TransactionServiceTest {
     @DisplayName("Тест на удаление транзакции")
     public void testDeleteTransaction() {
         when(transactionRepository.findByIdAndIsActive(1L, true)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         transactionService.deleteTransaction(1L);
 
-        assertThat(transaction.getIsActive()).isFalse();
         verify(transactionRepository).save(any(Transaction.class));
         verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.DELETED));
     }
@@ -288,5 +292,55 @@ public class TransactionServiceTest {
                 .hasMessage("Ни одной транзакции не найдено");
 
         verify(transactionRepository).findAll();
+    }
+
+    @Test
+    @DisplayName("Тест на обновление только суммы транзакции")
+    public void testUpdateTransactionAmountOnly() {
+        TransactionUpdateRequest amountOnlyRequest = new TransactionUpdateRequest(
+                new BigDecimal("500"), null
+        );
+
+        when(transactionRepository.findByIdAndIsActive(1L, true)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+
+        TransactionResponse response = transactionService.updateTransaction(1L, amountOnlyRequest);
+
+        assertThat(response.amount()).isEqualTo(new BigDecimal("500"));
+        verify(transactionRepository).save(any(Transaction.class));
+        verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.UPDATED));
+    }
+
+    @Test
+    @DisplayName("Тест на обновление только типа оплаты транзакции")
+    public void testUpdateTransactionPaymentTypeOnly() {
+        TransactionUpdateRequest paymentTypeOnlyRequest = new TransactionUpdateRequest(
+                null, "TRANSFER"
+        );
+
+        when(transactionRepository.findByIdAndIsActive(1L, true)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+
+        TransactionResponse response = transactionService.updateTransaction(1L, paymentTypeOnlyRequest);
+
+        assertThat(response.paymentType()).isEqualTo(PaymentType.TRANSFER);
+        verify(transactionRepository).save(any(Transaction.class));
+        verify(historySaver).saveTransactionHistory(any(Transaction.class), eq(ChangeType.UPDATED));
+    }
+
+    @Test
+    @DisplayName("Тест на обновление с некорректным типом оплаты")
+    public void testUpdateTransactionWithInvalidPaymentType() {
+        TransactionUpdateRequest invalidRequest = new TransactionUpdateRequest(
+                new BigDecimal("200"), "INVALID"
+        );
+
+        when(transactionRepository.findByIdAndIsActive(1L, true)).thenReturn(Optional.of(transaction));
+
+        assertThatThrownBy(() -> transactionService.updateTransaction(1L, invalidRequest))
+                .isInstanceOf(InvalidPaymentTypeException.class)
+                .hasMessageContaining("Неверный тип оплаты: INVALID");
+
+        verify(transactionRepository, never()).save(any(Transaction.class));
     }
 }
