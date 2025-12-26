@@ -408,18 +408,6 @@ docker-compose logs database
 - Декодируйте токен и проверьте authorities
 - Используйте токен с нужными правами (например admin)
 
-## 📞 Полезные ссылки
-
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- API Docs: http://localhost:8080/api-docs
-- Health Check: http://localhost:8080/actuator/health
-
-## 📄 Лицензия
-
-Учебный проект CFT.
-
----
-
 **Готово к использованию!** 🚀
 
 Запустите: `docker-compose up --build`
