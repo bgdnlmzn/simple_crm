@@ -1,0 +1,103 @@
+# Пример LDIF файла для инициализации тестовых пользователей и групп
+
+# Создание организационной единицы для пользователей
+dn: ou=people,dc=example,dc=com
+objectClass: organizationalUnit
+ou: people
+
+# Создание организационной единицы для групп
+dn: ou=groups,dc=example,dc=com
+objectClass: organizationalUnit
+ou: groups
+
+# Тестовый пользователь 1: admin (с полными правами)
+dn: uid=admin,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: admin
+cn: Admin User
+sn: User
+mail: admin@example.com
+userPassword: {SSHA}admin123
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/admin
+
+# Тестовый пользователь 2: user (обычный пользователь)
+dn: uid=user,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: user
+cn: Regular User
+sn: User
+mail: user@example.com
+userPassword: {SSHA}user123
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /home/user
+
+# Тестовый пользователь 3: manager (менеджер с правами на чтение/запись)
+dn: uid=manager,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: manager
+cn: Manager User
+sn: User
+mail: manager@example.com
+userPassword: {SSHA}manager123
+uidNumber: 1003
+gidNumber: 1003
+homeDirectory: /home/manager
+
+# Группа администраторов
+dn: cn=admins,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: admins
+description: Administrators group
+member: uid=admin,ou=people,dc=example,dc=com
+
+# Группа пользователей
+dn: cn=users,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: users
+description: Regular users group
+member: uid=user,ou=people,dc=example,dc=com
+member: uid=manager,ou=people,dc=example,dc=com
+
+# Группа с правом чтения продавцов
+dn: cn=read_sellers,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: read_sellers
+description: Users with read access to sellers
+member: uid=user,ou=people,dc=example,dc=com
+member: uid=manager,ou=people,dc=example,dc=com
+member: uid=admin,ou=people,dc=example,dc=com
+
+# Группа с правом записи продавцов
+dn: cn=write_sellers,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: write_sellers
+description: Users with write access to sellers
+member: uid=manager,ou=people,dc=example,dc=com
+member: uid=admin,ou=people,dc=example,dc=com
+
+# Группа с правом чтения транзакций
+dn: cn=read_transactions,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: read_transactions
+description: Users with read access to transactions
+member: uid=user,ou=people,dc=example,dc=com
+member: uid=manager,ou=people,dc=example,dc=com
+member: uid=admin,ou=people,dc=example,dc=com
+
+# Группа с правом записи транзакций
+dn: cn=write_transactions,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+cn: write_transactions
+description: Users with write access to transactions
+member: uid=manager,ou=people,dc=example,dc=com
+member: uid=admin,ou=people,dc=example,dc=com
+

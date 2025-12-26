@@ -1,4 +1,4 @@
-rootProject.name = 'crm'
-include 'src:test:resources'
-findProject(':src:test:resources')?.name = 'resources'
+rootProject.name = 'simple_crm'
 
+include 'crm-auth-ldap'
+include 'crm-core'

@@ -1,0 +1,44 @@
+server:
+    port: 8080
+
+spring:
+    datasource:
+        url: jdbc:postgresql://database:5432/crm
+        username: crm
+        password: crm
+    flyway:
+        enabled: true
+        locations:
+            - db.migration
+
+jwt:
+    secret: YourVerySecretJwtKeyThatShouldBeAtLeast256BitsLongForHS256Algorithm
+    expiration: 86400000
+
+ldap:
+    url: ldap://localhost:389
+    base-dn: dc=example,dc=com
+    user-dn-pattern: uid={0},ou=people
+    user-search-base: ou=people
+    user-search-filter: (uid={0})
+    group-search-base: ou=groups
+    group-search-filter: member={0}
+    group-role-attribute: cn
+
+springdoc:
+    api-docs:
+        path: /api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        operations-sorter: method
+        tags-sorter: alpha
+        display-request-duration: true
+
+management:
+    endpoint:
+        health:
+            enabled: true
+    endpoints:
+        web:
+            exposure:
+                include: health

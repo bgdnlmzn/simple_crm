@@ -1,6 +1,13 @@
-.git/
-.idea/
+# Исключаем ненужные файлы из Docker образа
+.git
+.gitignore
+.gradle
+build
+*.md
+!README.md
+.idea
 *.iml
-build/
-.gradle/
 *.log
+target
+.DS_Store
+node_modules

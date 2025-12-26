@@ -1,32 +1,72 @@
+version: '3.8'
+
 services:
-  postgres:
+  # PostgreSQL база данных
+  database:
     image: postgres:12
-    container_name: postgres
-    hostname: database
+    container_name: crm-postgres
     environment:
       POSTGRES_DB: crm
       POSTGRES_USER: crm
       POSTGRES_PASSWORD: crm
-    volumes:
-      - ./postgres:/docker-entrypoint-initdb.d
     ports:
-      - "5430:5432"
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  webapi:
+  # CRM приложение (включает auth + core)
+  crm-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: webapi
-    depends_on:
-      - postgres
+    container_name: crm-app
     ports:
       - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/crm
       SPRING_DATASOURCE_USERNAME: crm
       SPRING_DATASOURCE_PASSWORD: crm
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      SPRING_PROFILES_ACTIVE: dev
+      JWT_SECRET: ProductionSecretKeyForJWTThatShouldBeAtLeast256BitsLongForHS256Algorithm
+      LDAP_URL: ldap://ldap:389
+      LDAP_BASE_DN: dc=example,dc=com
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - crm-network
+
+  # LDAP сервер (опционально, для тестирования)
+  ldap:
+    image: osixia/openldap:latest
+    container_name: crm-ldap
+    environment:
+      LDAP_ORGANISATION: "Example Inc"
+      LDAP_DOMAIN: "example.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_TLS: "false"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+    networks:
+      - crm-network
+
+volumes:
+  postgres-data:
+  ldap-data:
+  ldap-config:
+
+networks:
+  crm-network:
+    driver: bridge
